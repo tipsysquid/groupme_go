@@ -49,6 +49,7 @@ func CreateJsonBot(filename string) (*Bot, error) {
 	log.Printf("Creating bot at %s\nLogging at %s\n", bot.server, bot.logfile)
 	bot.Hooks = make(map[string]func(InMsg) string)
 
+	log.Println("Bot Created:"+bot.id)
 	return &bot, err
 
 }
@@ -59,7 +60,14 @@ func HelloTest(str string) {
 
 func main() {
         fmt.Println("hello world!")
-	main.main()
+	bot, err := CreateJsonBot("bot_config.json")
+	if err != nil {
+		log.Fatal("Could not create bot from JSON")
+	}
+
+	log.Println(bot.server)
 }
+
+
 
 

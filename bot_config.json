@@ -1,0 +1,7 @@
+{
+	"bot_id":"my_bot_id",
+	"group_id":"my_group_id",
+	"host":"localhost",
+	"port":"8080",
+	"logfile":"log.csv"
+}

@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"io/ioutil"
+	"log"
 )
 
 type Bot struct {
@@ -15,7 +17,7 @@ type Bot struct {
 	port	string	`json:"port"`
 	logfile	string	`json:"logfile"`
 	server	string
-	Hooks	map[string]funct(InMsg) string
+	Hooks	map[string]func(InMsg) string
 }
 
 type InMsg struct {
@@ -32,4 +34,24 @@ type InMsg struct {
 type OutMsg struct {
 	id	string	`json:"bot_id"`
 	text	string	`json:"text"`
+}
+
+// Parses JSON and creates bot
+func CreateJsonBot(filename string) (*Bot, error) {
+	file, err := ioutil.ReadFile(filename)
+
+	var bot Bot
+	if err != nil {
+		log.Fatal("Unable to parse bot config")
+		return nil, err
+	}
+
+	json.Unmarshal(file, &bot)
+	
+	bot.server = bot.host + ":" + bot.port
+	log.Printf("Creating bot at %s\nLogging at %s\n", bot.server, bot.logfile)
+	bot.Hooks = make(map[string]func(InMsg) string)
+
+	return &bot, err
+
 }

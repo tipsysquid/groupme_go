@@ -66,8 +66,41 @@ func main() {
 	}
 
 	log.Println(bot.server)
+	bot.AddHook("Hi!$", hello)
+	bot.AddHook("Hello!$", hello2)
+	bot.AddHook("test$", test)
+	bot.AddHook("request", suggestion)
+	log.Printf("Listening on %v...\n", bot.server)
+	http.HandleFunc("/", bot.Handler())
+	log.Fatal(http.ListenAndServe(bot.server, nil))
 }
 
+/*
+ Test hook functions
+ Each hook should match a certain string, and if it matches
+ it should return a string of text
+ Hooks will be traversed until match occurs
+*/
+func hello(msg groupmebot.InboundMessage) (string) {
+        resp := fmt.Sprintf("Hi, %v.", msg.Name)
+        return resp
+}
+
+func hello2(msg groupmebot.InboundMessage) (string) {
+        resp := fmt.Sprintf("Hello, %v.", msg.Name)
+        return resp
+}
+
+func test(msg groupmebot.InboundMessage) (string) {
+        resp := fmt.Sprintf("This bot is a work in prorgress, %v.", msg.Name)
+        return resp
+}
+
+func suggestion(msg groupmebot.InboundMessage) (string) {
+        resp := fmt.Sprintf("Your suggestion has been saved, %v.", msg.Name)
+        log.Printf("Suggestion from %s: msg %s\n", msg.Name, msg)
+        return resp
+}
 
 
 

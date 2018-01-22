@@ -29,7 +29,7 @@ func request(msg groupmebot.InboundMessage) (string) {
 }
 
 func help(msg groupmebot.InboundMessage) (string) {
-	resp := fmt.Sprintf("Available commands: request\nType '/request' followed by an idea, and it will be saved for later\n Type 'marketcap' for total crypto marketcap\n Type '/eth for current ethereum price")
+	resp := fmt.Sprintf("Available commands: request\nType '/request' followed by an idea, and it will be saved for later\n Type 'marketcap' for total crypto marketcap\n Type '/eth for current ethereum price\n Type '/price %' where % is the symbol name of the token you are looking for")
 	return resp
 }
 
@@ -61,7 +61,7 @@ func symbolprice(msg groupmebot.InboundMessage) (string) {
 	symbol := strArray[1]
 	log.Printf(symbol)
 	ticker, _ :=client.Ticker(
-	//	coinmarketcap.Currency(symbol),
+		coinmarketcap.Limit(300),
 	)
 
 	coininfo := ticker.CoinBySymbol(symbol)
@@ -113,7 +113,7 @@ func main() {
 }
 
 func initMsg (bot *groupmebot.GroupMeBot){
-	bot.SendMessage("System warming up...\nType /help for available commands")
-	bot.SendMessage("Now with coinmarketcap API integration!")
+	//bot.SendMessage("System warming up...\nType /help for available commands")
+	bot.SendMessage("Updated Limit query to include top 300 tokens in search")
 }
 

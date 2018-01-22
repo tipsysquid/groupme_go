@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
+	"time"
 	"github.com/adammohammed/groupmebot"
+	"github.com/abrander/coinmarketcap"
 )
 
 /*
@@ -14,15 +15,6 @@ import (
  it should return a string of text
  Hooks will be traversed until match occurs
 */
-func hello(msg groupmebot.InboundMessage) (string) {
-	resp := fmt.Sprintf("Hi, %v.", msg.Name)
-	return resp
-}
-
-func hello2(msg groupmebot.InboundMessage) (string) {
-	resp := fmt.Sprintf("Hello, %v.", msg.Name)
-	return resp
-}
 
 func test(msg groupmebot.InboundMessage) (string) {
 	resp := fmt.Sprintf("This bot is a work in prorgress, %v.", msg.Name)
@@ -36,9 +28,43 @@ func suggestion(msg groupmebot.InboundMessage) (string) {
 }
 
 func help(msg groupmebot.InboundMessage) (string) {
-	resp := fmt.Sprintf("Available commands: request\nType 'request' followed by an idea, and it will be saved for later")
+	resp := fmt.Sprintf("Available commands: request\nType 'request' followed by an idea, and it will be saved for later\n Type 'marketcap' for total crypto marketcap")
 	return resp
 }
+
+func ethprice(msg groupmebot.InboundMessage) (string) {
+	client, _ := coinmarketcap.NewClient()
+
+	ticker, _ := client.Ticker(
+		coinmarketcap.Currency("ethereum"),
+	)
+
+	coininfo := ticker.CoinBySymbol("eth")
+	price, _ := coininfo.Price("USD")
+
+	resp := fmt.Sprintf("Current Ethereum price in USD: %.0f (Updated %s ago)", 
+		price, time.Since(coininfo.LastUpdated),
+	)
+	return resp
+}
+
+
+func marketcap(msg groupmebot.InboundMessage) (string) {
+	client, _ := coinmarketcap.NewClient()
+
+	globaldata, _ := client.GlobalData(
+		coinmarketcap.Convert("USD"),
+	)
+
+	cap, _ := globaldata.MarketCap("USD")
+
+	resp :=	fmt.Sprintf("Global market cap in USD: %.0f (Updated %s ago)\n",
+		cap,
+		time.Since(globaldata.LastUpdated),
+	)
+	return resp
+}
+
 
 func main() {
 
@@ -48,12 +74,12 @@ func main() {
 	}
 
 	// Make a list of functions
-	bot.AddHook("Hi!$", hello)
-	bot.AddHook("Hello!$", hello2)
 	bot.AddHook("test$",test)
-	bot.AddHook("request",suggestion)
-	bot.AddHook("Request",suggestion)
+	bot.AddHook("/request",suggestion)
+	bot.AddHook("/Request",suggestion)
 	bot.AddHook("/help",help)
+	bot.AddHook("/marketcap",marketcap)
+	bot.AddHook("/eth", ethprice)
 	// Create Server to listen for incoming POST from GroupMe
 	log.Printf("Listening on %v...\n", bot.Server)
 	http.HandleFunc("/", bot.Handler())
@@ -63,5 +89,6 @@ func main() {
 
 func initMsg (bot *groupmebot.GroupMeBot){
 	bot.SendMessage("System warming up...\nType /help for available commands")
-	bot.SendMessage("Now supporting lazy-patch for uppercase R!")
+	bot.SendMessage("Now with coinmarketcap API integration!")
 }
+

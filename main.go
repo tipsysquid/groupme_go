@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"strings"
 	"github.com/adammohammed/groupmebot"
 	"github.com/abrander/coinmarketcap"
 )
@@ -21,14 +22,14 @@ func test(msg groupmebot.InboundMessage) (string) {
 	return resp
 }
 
-func suggestion(msg groupmebot.InboundMessage) (string) {
-	resp := fmt.Sprintf("Your suggestion has been saved, %v.", msg.Name)
+func request(msg groupmebot.InboundMessage) (string) {
+	resp := fmt.Sprintf("Your request has been saved, %v.", msg.Name)
         log.Printf("Suggestion from %s: msg %s\n", msg.Name, msg)
 	return resp
 }
 
 func help(msg groupmebot.InboundMessage) (string) {
-	resp := fmt.Sprintf("Available commands: request\nType 'request' followed by an idea, and it will be saved for later\n Type 'marketcap' for total crypto marketcap")
+	resp := fmt.Sprintf("Available commands: request\nType '/request' followed by an idea, and it will be saved for later\n Type 'marketcap' for total crypto marketcap\n Type '/eth for current ethereum price")
 	return resp
 }
 
@@ -48,6 +49,30 @@ func ethprice(msg groupmebot.InboundMessage) (string) {
 	return resp
 }
 
+func symbolprice(msg groupmebot.InboundMessage) (string) {
+	client, _ := coinmarketcap.NewClient()
+	
+	//symbol := splitAfter(msg.Text, '/price', "'")
+	strArray := strings.Fields(msg.Text)
+
+	log.Printf(msg.Text)
+	log.Printf(strArray[0])
+
+	symbol := strArray[1]
+	log.Printf(symbol)
+	ticker, _ :=client.Ticker(
+	//	coinmarketcap.Currency(symbol),
+	)
+
+	coininfo := ticker.CoinBySymbol(symbol)
+	price, _:= coininfo.Price("USD")
+
+	resp := fmt.Sprintf("Current price of %s (%s) in USD: %.2f", 
+		coininfo.Name, coininfo.Symbol, price,)
+
+	return resp
+
+}
 
 func marketcap(msg groupmebot.InboundMessage) (string) {
 	client, _ := coinmarketcap.NewClient()
@@ -74,12 +99,12 @@ func main() {
 	}
 
 	// Make a list of functions
-	bot.AddHook("test$",test)
-	bot.AddHook("/request",suggestion)
-	bot.AddHook("/Request",suggestion)
+	bot.AddHook("/test$",test)
+	bot.AddHook("/request",request)
 	bot.AddHook("/help",help)
 	bot.AddHook("/marketcap",marketcap)
 	bot.AddHook("/eth", ethprice)
+	bot.AddHook("/price", symbolprice)
 	// Create Server to listen for incoming POST from GroupMe
 	log.Printf("Listening on %v...\n", bot.Server)
 	http.HandleFunc("/", bot.Handler())

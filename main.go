@@ -90,6 +90,30 @@ func marketcap(msg groupmebot.InboundMessage) (string) {
 	return resp
 }
 
+func graphsymbol(msg groupmebot.InboundMessage) (string) {
+	client, _ := coinmarketcap.NewClient()
+
+	strArray := strings.Fields(msg.Text)
+	symbol := strArray[1]
+	ticker, _ := client.Ticker(
+		coinmarketcap.Limit(300),
+	)
+	
+	coininfo := ticker.CoinBySymbol(symbol)
+	now := time.Now()
+	tenmin := now.Add(-10 * time.Minute)
+	yesterday := now.Add(-24 * time.Minute)
+	graph := client.GraphURL(coininfo.Name, yesterday ,tenmin)
+
+	log.Printf("testing graph: %s", graph)
+	
+	resp := fmt.Sprintf("%s", graph )
+
+
+	return resp
+}
+
+
 
 func main() {
 
@@ -105,6 +129,7 @@ func main() {
 	bot.AddHook("/marketcap",marketcap)
 	bot.AddHook("/eth", ethprice)
 	bot.AddHook("/price", symbolprice)
+	bot.AddHook("/graph", graphsymbol)
 	// Create Server to listen for incoming POST from GroupMe
 	log.Printf("Listening on %v...\n", bot.Server)
 	http.HandleFunc("/", bot.Handler())
@@ -114,6 +139,6 @@ func main() {
 
 func initMsg (bot *groupmebot.GroupMeBot){
 	//bot.SendMessage("System warming up...\nType /help for available commands")
-	bot.SendMessage("Updated Limit query to include top 300 tokens in search")
+//	bot.SendMessage("Updated Limit query to include top 300 tokens in search")
 }
 
